@@ -16,6 +16,7 @@ const Order = props => {
             </li>
             )}
         </ul>
+        <p>Total: $ {props.total}</p>
     </div>;
 }
 

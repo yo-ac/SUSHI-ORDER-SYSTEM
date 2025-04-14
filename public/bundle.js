@@ -9718,6 +9718,14 @@ var App = function App(props) {
     _useState2 = _slicedToArray(_useState, 2),
     showModal = _useState2[0],
     setShowModal = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(),
+    _useState4 = _slicedToArray(_useState3, 2),
+    selectedItem = _useState4[0],
+    setSelectedItem = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+    _useState6 = _slicedToArray(_useState5, 2),
+    total = _useState6[0],
+    setTotal = _useState6[1];
   function cartReducer(state, action) {
     switch (action.type) {
       case 'ADD_ITEM':
@@ -9761,25 +9769,54 @@ var App = function App(props) {
       type: 'ADD_ITEM',
       item: item
     });
+    setTotal(total + item.price);
+    console.log(total);
   };
   var handleRemoveFromOrder = function handleRemoveFromOrder(event, orderItemId) {
     // TODO: remove item from order 
+    var existingItem = cart.find(function (item) {
+      return item.id === orderItemId;
+    });
+    if (existingItem) {
+      var amount = existingItem.price * existingItem.quantity;
+      if (cart.length === 0) {
+        setTotal(0);
+      } else {
+        setTotal(function (prev) {
+          return parseFloat((prev - amount).toFixed(2));
+        });
+        console.log('CART: ', cart.length);
+      }
+    }
     dispatch({
       type: 'REMOVE_ITEM',
       id: orderItemId
     });
-    console.log('eliminating');
   };
   var handleModifyOrderItem = function handleModifyOrderItem(event, orderItemId) {
     // TODO: register that an order item is being modified
     setShowModal(true);
     dispatch({
-      type: 'MODIFY ITEM',
+      type: 'MODIFY_ITEM',
       orderItemId: orderItemId
     });
+    setSelectedItem(orderItemId);
   };
-  var handleSubmitModification = function handleSubmitModification(event, newQuantity) {
+  var handleSubmitModification = function handleSubmitModification(id, newQuantity) {
     // TODO: once the new quantity of the order item has been chosen, update the order 
+    var item = cart.find(function (item) {
+      return item.id === id;
+    });
+    if (!item) return;
+    var difference = newQuantity - item.quantity;
+    var updatedTotal = total + item.price * difference;
+    setTotal(parseFloat(updatedTotal.toFixed(2)));
+    dispatch({
+      type: 'MODIFY_ITEM',
+      id: id,
+      quantity: newQuantity
+    });
+    setShowModal(false);
   };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "app"
@@ -9788,9 +9825,14 @@ var App = function App(props) {
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Order_js__WEBPACK_IMPORTED_MODULE_2__["default"], {
     order: cart,
     handleRemoveFromOrder: handleRemoveFromOrder,
-    handleModifyOrderItem: handleModifyOrderItem
+    handleModifyOrderItem: handleModifyOrderItem,
+    total: total
   }), showModal && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_OrderItemModifier_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
-    handleModifyOrderItem: handleModifyOrderItem
+    item: cart.find(function (item) {
+      return item.id === selectedItem;
+    }),
+    handleModifyOrderItem: handleModifyOrderItem,
+    handleSubmitModification: handleSubmitModification
   }));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
@@ -9880,7 +9922,7 @@ var Order = function Order(props) {
         return props.handleModifyOrderItem(event, orderItem.id);
       }
     }, "Modify"));
-  })));
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("p", null, "Total: $ ", props.total));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Order);
 
@@ -9898,15 +9940,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 
 var OrderItemModifier = function OrderItemModifier(props) {
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.item.quantity),
+    _useState2 = _slicedToArray(_useState, 2),
+    quantity = _useState2[0],
+    setQuantity = _useState2[1];
+  console.log(quantity);
+  var handleChange = function handleChange(e) {
+    setQuantity(e.target.value);
+  };
+  var handleDone = function handleDone() {
+    props.handleSubmitModification(props.item.id, quantity);
+  };
+
   // TODO: keep track of quantity change 
 
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "order-item-modifier"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     className: "modal"
-  }));
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("h2", null, "Modify this item"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("h3", null, props.item.name), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("label", null, "Quantity:"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("input", {
+    type: "number",
+    min: 1,
+    max: 20,
+    onChange: handleChange
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", {
+    onClick: handleDone
+  }, "Done")));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (OrderItemModifier);
 
